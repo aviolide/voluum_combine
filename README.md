@@ -16,7 +16,7 @@
 <p>Set cloak</p>
 
 ![SCREENSHOT](files/github_combine2.png)
-<p>Profile page</p>
+<p>Set costs</p>
 
 ![SCREENSHOT](files/github_combine3.png)
 <p>Profile page</p>

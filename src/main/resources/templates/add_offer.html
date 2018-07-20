@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns="http://www.w3.org/1999/html">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title></title>
+
+
+	<link th:href="@{/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+	<link th:href="@{/css/style.css}" rel="stylesheet">
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+<div class="page">
+	<div class="container-fluid pl-0 h-100">
+		<div class="row h-100">
+			<div class="col-sm-2 bg-dark">
+				<nav class="navbar navbar-expand navbar-dark flex-md-column flex-row align-items-start py-2">
+					<a class="navbar-brand" href="index.html">Logo</a>
+					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav1" aria-controls="nav1" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div class="collapse navbar-collapse" id="nav1">
+						<ul class="flex-md-column flex-row navbar-nav w-100 justify-content-between">
+							<li class="nav-item">
+								<a class="nav-link pl-0 text-nowrap" th:href="@{/main/}"><span class="font-weight-bold">Dashboard</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/add_offer/}"><span class="d-none d-md-inline">Add offers</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/set_cloak/}"><span class="d-none d-md-inline">Set cloak</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/costs/}"><span class="d-none d-md-inline">Costs</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/monitoring/}"></i> <span class="d-none d-md-inline">Monitoring</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{#}"><span class="d-none d-md-inline">Analyze</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/profile/}"><span class="d-none d-md-inline">Profile</span></a>
+							</li>
+						</ul>
+					</div>
+				</nav>
+			</div>
+			<div class="col-sm-10">
+				<div class="row">
+					<div class="col-sm-7">
+						<div class="row">
+							<div class="col-sm-6">
+								<p>Choose Aff Network</p>
+								<th:block th:each="affiliate_network : ${affiliateList}">
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="affnetwork" id="rad1" th:value="${affiliate_network.nameVoluum}" checked>
+										<label class="form-check-label" for="rad1" th:text="${affiliate_network.nameVoluum}"></label>
+									</div>
+								</th:block>
+							</div>
+							<div class="col-sm-3">
+								<p>Choose Traffic Source</p>
+								<th:block th:each="traffic_list : ${trafficList}">
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="trafsource" id="rad3" th:value="${traffic_list.nameVoluum}" checked>
+										<label class="form-check-label" for="rad3" th:text="${traffic_list.nameVoluum}"></label>
+									</div>
+								</th:block>
+							</div>
+						</div>
+						<hr/>
+						<div class="row">
+							<div class="col-sm-12">
+								<p>Settings</p>
+								<form class="form-inline" id="addoffersform">
+									<input required type="text" class="form-control mr-sm-2" name="idcompaign" placeholder="ID compaign" style="max-width: 100px;">
+									<input type="text" class="form-control mr-sm-2" name="idland" placeholder="ID land" style="max-width: 100px;">
+									<input type="text" class="form-control mr-sm-2" name="postfix" placeholder="Postfix Name" style="max-width: 100px;">
+									<input type="text" class="form-control mr-sm-2" name="comment" placeholder="Comment" style="max-width: 100px;">
+									<input type="text" class="form-control mr-sm-2" name="idnew" placeholder="ID edit OLD campaign" style="max-width: 100px;">
+									<span class="switch">
+										<input type="checkbox" class="switch" name="newoldcampaign" id="switch1">
+										<label for="switch1"></label>
+									</span>
+									<div class="btn-box">
+										<button type="submit" class="btn btn-primary mr-sm-2">Add</button>
+									</div>
+								</form>
+							</div>
+						</div>
+						<hr/>
+						<div class="row">
+							<div class="col-sm-12">
+								<p>Offers to Add</p>
+								<div id="addedoffers">
+									<table>
+										<tbody>
+										<tr><th>ID campaign</th><th>ID land</th><th>Postfix Name</th><th>Comment</th><th>ID for new</th><th>New/Old</th></tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="btn-box">
+									<a target="_blank" href="/voluum_combine/add_offer/logging">
+										<div id="btnstartoffers" class="btn btn-primary mr-sm-2">
+												Start
+										</div>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-5">
+						<p>Offer Status</p>
+						<div id="offerstatus">
+							<table>
+								<tbody>
+								<tr><th>offer_id</th><th>land_id</th><th>aff_network</th><th>status</th></tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="btn-box">
+							<div id="chkpendingoffers" class="btn btn-primary mr-sm-2">Check pendings offers</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var offer_status = /*[[${offerList}]]*/ null;
+    /*]]>*/
+</script>
+
+<script th:src="@{/js/jquery-1.12.4.min.js}"></script>
+<script th:src="@{/js/popper.min.js}"></script>
+
+<script th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+<script th:src="@{/js/script.js}"></script>
+
+</body>
+</html>

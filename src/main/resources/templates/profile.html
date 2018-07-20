@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns="http://www.w3.org/1999/html">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title></title>
+
+
+	<link th:href="@{/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+	<link th:href="@{/css/style.css}" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" th:href="@{/DataTables/DataTables-1.10.16/css/jquery.dataTables.min.css}"/>
+
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+
+<div class="page">
+	<div class="container-fluid pl-0 h-100">
+		<div class="row h-100">
+			<div class="col-sm-2 bg-dark">
+				 <nav class="navbar navbar-expand navbar-dark flex-md-column flex-row align-items-start py-2">
+					<a class="navbar-brand" href="index.html">Logo</a>
+					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav1" aria-controls="nav1" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					 <div class="collapse navbar-collapse" id="nav1">
+						 <ul class="flex-md-column flex-row navbar-nav w-100 justify-content-between">
+							 <li class="nav-item">
+								 <a class="nav-link pl-0 text-nowrap" th:href="@{/main/}"><span class="font-weight-bold">Dashboard</span></a>
+							 </li>
+							 <li class="nav-item">
+								 <a class="nav-link pl-0" th:href="@{/add_offer/}"><span class="d-none d-md-inline">Add offers</span></a>
+							 </li>
+							 <li class="nav-item">
+								 <a class="nav-link pl-0" th:href="@{/set_cloak/}"><span class="d-none d-md-inline">Set cloak</span></a>
+							 </li>
+							 <li class="nav-item">
+								 <a class="nav-link pl-0" th:href="@{/costs/}"><span class="d-none d-md-inline">Costs</span></a>
+							 </li>
+							 <li class="nav-item">
+								 <a class="nav-link pl-0" th:href="@{/monitoring/}"></i> <span class="d-none d-md-inline">Monitoring</span></a>
+							 </li>
+							 <li class="nav-item">
+								 <a class="nav-link pl-0" th:href="@{#}"><span class="d-none d-md-inline">Analyze</span></a>
+							 </li>
+							 <li class="nav-item">
+								 <a class="nav-link pl-0" th:href="@{/profile/}"><span class="d-none d-md-inline">Profile</span></a>
+							 </li>
+						 </ul>
+					 </div>
+				 </nav>
+			</div>
+			<div class="col-sm-10">
+
+				<h3>Affiliate Networks</h3>
+				<table id="affnettable"></table>
+				<div class="btn-box">
+					<div class="btn btn-primary table_add" data-type="table1">Add</div>
+				</div>
+				<hr/>
+				<h3>Traffic Sources</h3>
+				<table id="trafficsotable"></table>
+				<div class="btn-box">
+					<div class="btn btn-primary table_add" data-type="table2">Add</div>
+				</div>
+				<hr/>
+				<h3>Voluum</h3>
+				<table id="voluumtable"></table>
+				<div class="btn-box">
+					<div class="btn btn-primary table_add" data-type="table3">Add</div>
+				</div>
+				<hr/>
+				<h3>Cloak</h3>
+				<table id="cloaktable"></table>
+				<div class="btn-box">
+					<div class="btn btn-primary table_add" data-type="table4">Add</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--<script th:href="@{js/jquery-1.12.4.min.js}"></script>-->
+<!--<script th:href="@{js/popper.min.js}"></script>-->
+
+<!--<script th:href="@{bootstrap/js/bootstrap.min.js}"></script>-->
+<!--<script th:href="@{js/script.js}"></script>-->
+	<!---->
+<!--<script type="text/javascript" th:href="@{DataTables/datatables.min.js}"></script>-->
+<script th:src="@{/js/jquery-1.12.4.min.js}"></script>
+<script th:src="@{/js/popper.min.js}"></script>
+
+<script th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+
+<script type="text/javascript" th:src="@{/DataTables/datatables.min.js}"></script>
+
+<script th:src="@{/js/script.js}"></script>
+<script th:inline="javascript">
+
+    var table1;
+    var table2;
+    var table3;
+    var table4;
+    var tables = {
+        "table1": {
+            "name": "Affiliate Networks",
+            "add": "/profile/affiliate_network/add",
+            "edit": "/profile/affiliate_network/edit",
+            "clear": "/profile/affiliate_network/clear"
+        },
+        "table2": {
+            "name": "Traffic Sources",
+            "add": "/profile/traffic_source/add",
+            "edit": "/profile/traffic_source/edit",
+            "clear": "/profile/traffic_source/clear"
+        },
+        "table3": {
+            "name": "Voluum",
+            "add": "/profile/voluum/add",
+            "edit": "/profile/voluum/edit",
+            "clear": "/profile/voluum/clear"
+        },
+        "table4": {
+            "name": "Cloak",
+            "add": "/profile/cloak/add",
+            "edit": "/profile/cloak/edit",
+            "clear": "/profile/cloak/clear"
+        }
+    }
+
+    $(document).ready(function(){
+
+        var BASE_URL = "/voluum_combine";
+
+        /*<![CDATA[*/
+        var affiliate_network_var = /*[[${var}]]*/ 'default';
+        /*]]>*/
+
+        /*<![CDATA[*/
+        var traffic_suources_var = /*[[${traffic_sources}]]*/ 'default';
+        /*]]>*/
+
+        /*<![CDATA[*/
+        var voluum_var = /*[[${users}]]*/ 'default';
+        /*]]>*/
+
+        /*<![CDATA[*/
+        var cloak_var = /*[[${cloak}]]*/ 'default';
+        /*]]>*/
+
+        printTable1( JSON.parse(affiliate_network_var ));
+        printTable2( JSON.parse(traffic_suources_var ));
+        printTable3( JSON.parse(voluum_var ));
+        printTable4( JSON.parse(cloak_var ));
+
+
+        $('body').on('click', '.table_add', function (e) {
+            e.preventDefault();
+            var modal = $("#modal1");
+            //var ths = $("#affnettable").find("th");
+            var ths = $(this).closest(".btn-box").prev(".dataTables_wrapper").find("thead").find("th");
+            var formbody = '';
+            $.each(ths,function(index, value){
+                if (ths.length-1 != index) {
+                    formbody += '<div class="form-group"><input name="'+$(value).text()+'" type="text" class="form-control" placeholder="'+$(value).text()+'"></div>';
+                }
+            });
+            modal.find(".modal-body form").html( formbody );
+            modal.find(".btnaction").data( "type", $(this).data("type") );
+            modal.find(".modal-title").html( tables[$(this).data("type")]['name']);
+            modal.modal("show");
+        } );
+
+        $('body').on('click', 'a.table_edit', function (e) {
+            e.preventDefault();
+            var modal = $("#modal2");
+            var ths = $(this).closest("table").find("thead").find("th");
+            var tr = $(this).closest("tr");
+            var tds = $(tr).find("td");
+            var formbody = '';
+            $.each(ths,function(index, value){
+                if (ths.length-1 != index) {
+                    formbody += '<div class="form-group"><input name="'+$(value).text()+'" type="text" class="form-control" placeholder="'+$(value).text()+'" value="'+$(tds).eq(index).text()+'"></div>';
+                }
+            });
+            modal.find(".modal-body form").html( formbody );
+            modal.find(".btnactionedit").data( "type", $(this).data("type") );
+            modal.find(".modal-title").html( tables[$(this).data("type")]['name']);
+            modal.modal("show");
+
+        } );
+
+        $('body').on('click', 'a.table_clear', function (e) {
+            e.preventDefault();
+            var out = new Object();
+            var ths = $(this).closest("table").find("thead").find("th");
+            var tr = $(this).closest("tr");
+            var tds = $(tr).find("td");
+            var type = $(this).data("type");
+            $.each(tds,function(index, value){
+                if (tds.length-1 != index) {//last
+                    var name = ths.eq(index).text();
+                    out[name] = $(value).text();
+                }
+            });
+            $.ajax({
+                //url: BASE_URL+'/profile/affiliate_network/clear',
+                url: BASE_URL+tables[type]['clear'],
+                type : "POST",
+                data: JSON.stringify( out ),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success : function(result) {
+                    console.log(type);
+                    switch (type) {
+                        case 'table1':
+                            printTable1( result );
+                            break;
+                        case 'table2':
+                            printTable2( result );
+                            break;
+                        case 'table3':
+                            printTable3( result );
+                            break;
+                        case 'table4':
+                            printTable4( result );
+                            break;
+                    }
+                    //printTable1( result );
+                },
+                error: function(xhr, resp, text) {
+                    //console.log(xhr, resp, text);
+                }
+            })
+
+        } );
+
+        $("#modal1 .btnaction").click(function(e){
+            e.preventDefault();
+            var out = new Object();
+            var inputs = $(this).closest(".modal").find("input");
+            var type = $(this).data("type");
+            $.each(inputs,function(index, value){
+                var name = $(value).attr("name");
+                var val = $(value).val();
+                out[name] = val;
+            });
+            $.ajax({
+                //url: BASE_URL+'/profile/affiliate_network/add',
+                url: BASE_URL+tables[type]['add'],
+                type : "POST",
+                data: JSON.stringify( out ),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success : function(result) {
+                    $("#modal1").modal("hide");
+                    console.log(type);
+                    switch (type) {
+                        case 'table1':
+                            printTable1( result );
+                            break;
+                        case 'table2':
+                            printTable2( result );
+                            break;
+                        case 'table3':
+                            printTable3( result );
+                            break;
+                        case 'table4':
+                            printTable4( result );
+                            break;
+                    }
+                    // printTable1( result );
+                },
+                error: function(xhr, resp, text) {
+                    //console.log(xhr, resp, text);
+                }
+            })
+        });
+
+        $("#modal2 .btnactionedit").click(function(e){
+            e.preventDefault();
+            var out = new Object();
+            var inputs = $(this).closest(".modal").find("input");
+            var type = $(this).data("type");
+            $.each(inputs,function(index, value){
+                var name = $(value).attr("name");
+                var val = $(value).val();
+                out[name] = val;
+            });
+            $.ajax({
+                //url: BASE_URL+'/profile/affiliate_network/edit',
+                url: BASE_URL+tables[type]['edit'],
+                type : "POST",
+                data: JSON.stringify( out ),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success : function(result) {
+                    $("#modal2").modal("hide");
+                    console.log(type);
+                    switch (type) {
+                        case 'table1':
+                            printTable1( result );
+                            break;
+                        case 'table2':
+                            printTable2( result );
+                            break;
+                        case 'table3':
+                            printTable3( result );
+                            break;
+                        case 'table4':
+                            printTable4( result );
+                            break;
+                    }
+                    //printTable1( result );
+                },
+                error: function(xhr, resp, text) {
+                    //console.log(xhr, resp, text);
+                }
+            })
+        });
+
+    });
+
+    function printTable1(indata) {
+
+        var tableData = [];
+        $.each(indata,function(index2, value2){
+
+            var clearobj = new Object();
+            clearobj.id_voluum = value2.id_voluum;
+            clearobj.name_voluum = value2.name_voluum;
+            clearobj.login = value2.login;
+            clearobj.password = value2.password;
+            clearobj.domain_mob = value2.domain_mob;
+            clearobj.domain_web = value2.domain_web;
+            clearobj.cd_affiliate_id = value2.cd_affiliate_id;
+            clearobj.cd_api_key = value2.cd_api_key;
+            clearobj.proxy_host = value2.proxy_host;
+            clearobj.proxy_port = value2.proxy_port;
+            clearobj.proxy_user = value2.proxy_user;
+            clearobj.proxy_password = value2.proxy_password;
+
+            var partarray = Object.values(clearobj);
+            tableData.push(partarray);
+        });
+
+        if (table1) {
+            table1.destroy();
+        }
+        table1 = $('#affnettable').DataTable({
+            "data": tableData,
+            "columns": [
+                { title: "id_voluum" },
+                { title: "name_voluum" },
+                { title: "login" },
+                { title: "password" },
+                { title: "domain_mob" },
+                { title: "domain_web" },
+                { title: "cd_affiliate_id" },
+                { title: "cd_api_key" },
+                { title: "proxy_host" },
+                { title: "proxy_port" },
+                { title: "proxy_user" },
+                { title: "proxy_password" },
+                {
+                    data: null,
+                    className: "center",
+                    defaultContent: '<a href="#" class="table_edit" data-type="table1">Edit</a> / <a href="#" class="table_clear" data-type="table1">Clear</a>'
+                }
+            ],
+            "paging": false,
+            //"scrollX": true,
+            //colReorder: true,
+            "fixedColumns": true,
+            //"fixedHeader": true,
+            //rowReorder: true,
+            "select": true,
+        });
+    };
+
+    function printTable2(indata) {
+
+        var tableData2 = [];
+        $.each(indata,function(index2, value2){
+
+            var clearobj = new Object();
+            clearobj.id_voluum = value2.id_voluum;
+            clearobj.name_voluum = value2.name_voluum;
+            clearobj.login = value2.login;
+            clearobj.password = value2.password;
+            var partarray = Object.values(clearobj);
+            tableData2.push(partarray);
+        });
+
+        if (table2) {
+            table2.destroy();
+        }
+        table2 = $('#trafficsotable').DataTable({
+            "data": tableData2,
+            "columns": [
+                { title: "id_voluum" },
+                { title: "name_voluum" },
+				{ title: "login" },
+                { title: "password" },
+                {
+                    data: null,
+                    className: "center",
+                    defaultContent: '<a href="#" class="table_edit" data-type="table2">Edit</a> / <a href="#" class="table_clear" data-type="table2">Clear</a>'
+                }
+            ],
+            "paging": false,
+            //"scrollX": true,
+            //colReorder: true,
+            "fixedColumns": true,
+            //"fixedHeader": true,
+            //rowReorder: true,
+            "select": true,
+        });
+    };
+
+    function printTable3(indata) {
+
+        var tableData = [];
+        $.each(indata,function(index2, value2){
+
+            var clearobj = new Object();
+            clearobj.email = value2.email;
+            clearobj.name = value2.name;
+            clearobj.login = value2.login;
+            clearobj.voluum_login = value2.voluum_login;
+            clearobj.voluum_password = value2.voluum_password;
+            clearobj.voluum_access_id = value2.voluum_access_id;
+            clearobj.voluum_access_key = value2.voluum_access_key;
+            clearobj.voluum_client_id = value2.voluum_client_id;
+            clearobj.workspace = value2.workspace;
+            clearobj.workspace_id = value2.workspace_id;
+            clearobj.offer_count = value2.offer_count;
+            var partarray = Object.values(clearobj);
+            tableData.push(partarray);
+        });
+
+        if (table3) {
+            table3.destroy();
+        }
+        table3 = $('#voluumtable').DataTable({
+            "data": tableData,
+            "columns": [
+                { title: "email" },
+                { title: "name" },
+                { title: "login" },
+                { title: "voluum_login" },
+                { title: "voluum_password" },
+                { title: "voluum_access_id" },
+                { title: "voluum_access_key" },
+                { title: "voluum_client_id" },
+                { title: "workspace" },
+                { title: "workspace_id" },
+                { title: "offer_count" },
+                {
+                    data: null,
+                    className: "center",
+                    defaultContent: '<a href="#" class="table_edit" data-type="table3">Edit</a> / <a href="#" class="table_clear" data-type="table3">Clear</a>'
+                }
+            ],
+            "paging": false,
+            //"scrollX": true,
+            //colReorder: true,
+            "fixedColumns": true,
+            //"fixedHeader": true,
+            //rowReorder: true,
+            "select": true,
+        });
+    };
+
+    function printTable4(indata) {
+
+        var tableData = [];
+        $.each(indata,function(index2, value2){
+
+            var clearobj = new Object();
+            clearobj.cloak_offer_name = value2.cloak_offer_name;
+            clearobj.cloak_offer_id = value2.cloak_offer_id;
+            clearobj.cloak_lander_name = value2.cloak_lander_name;
+            clearobj.cloak_lander_id = value2.cloak_lander_id;
+            var partarray = Object.values(clearobj);
+            tableData.push(partarray);
+        });
+
+        if (table4) {
+            table4.destroy();
+        }
+        table4 = $('#cloaktable').DataTable({
+            "data": tableData,
+            "columns": [
+                { title: "cloak_offer_name" },
+                { title: "cloak_offer_id" },
+                { title: "cloak_lander_name" },
+                { title: "cloak_lander_id" },
+                {
+                    data: null,
+                    className: "center",
+                    defaultContent: '<a href="#" class="table_edit" data-type="table4">Edit</a> / <a href="#" class="table_clear" data-type="table4">Clear</a>'
+                }
+            ],
+            "paging": false,
+            //"scrollX": true,
+            //colReorder: true,
+            "fixedColumns": true,
+            //"fixedHeader": true,
+            //rowReorder: true,
+            "select": true,
+        });
+    };
+
+</script>
+
+<div id="modal1" class="modal" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Add</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form></form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary btnaction" data-type="">Add</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="modal2" class="modal" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Edit</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form></form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary btnactionedit" data-type="">Edit</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

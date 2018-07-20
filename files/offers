@@ -1,0 +1,103 @@
+{
+  "id": "f1ea36a6-053e-4525-aaf7-87124136080d",
+  "name": "Germany MOB Finik 140718 adtraf 15.07",
+  "createdTime": "2018-07-14T22:56:50.779Z",
+  "updatedTime": "2018-07-15T01:03:04.300Z",
+  "deleted": false,
+  "countries": [
+    {
+      "code": "DE",
+      "name": "Germany"
+    }
+  ],
+  "defaultPaths": [
+    {
+      "id": "ea03630b-9d18-4bed-a84a-75a76dab6166",
+      "name": "Path 1",
+      "active": true,
+      "weight": 100,
+      "landers": [
+        {
+          "weight": 100,
+          "lander": {
+            "id": "ad0ac7f1-87fd-47fe-bd53-5e83d6e57f45"
+          }
+        }
+      ],
+      "offers": [
+        {
+          "weight": 100,
+          "offer": {
+            "id": "05e04818-4e4a-48f2-8a1f-b4b606d48da8"
+          }
+        }
+      ],
+      "offerRedirectMode": "REGULAR",
+      "realtimeRoutingApiState": "DISABLED",
+      "autoOptimized": false
+    }
+  ],
+  "conditionalPathsGroups": [
+    {
+      "id": "0db20d5a-866a-4ad3-95ae-455d0afa9d7a",
+      "name": "cloak",
+      "active": true,
+      "conditions": {
+        "customVariable": {
+          "values": [
+            {
+              "predicate": "MUST_NOT_BE",
+              "variableIndex": 3,
+              "variableValues": [
+                "1971641"
+              ]
+            },
+            {
+              "predicate": "MUST_BE",
+              "variableIndex": 4,
+              "variableValues": [
+                "propellerads"
+              ]
+            }
+          ]
+        }
+      },
+      "paths": [
+        {
+          "id": "efb7ea20-66f9-4508-8cb7-c53bee31d237",
+          "name": "Path 1",
+          "active": true,
+          "weight": 100,
+          "landers": [
+            {
+              "weight": 100,
+              "lander": {
+                "id": "45583d97-0638-4c23-81d1-f0ea9beedf92"
+              }
+            }
+          ],
+          "offers": [
+            {
+              "weight": 100,
+              "offer": {
+                "id": "981f59c7-7a61-4e02-acf5-edd7a44fed96"
+              }
+            }
+          ],
+          "offerRedirectMode": "REGULAR",
+          "realtimeRoutingApiState": "DISABLED",
+          "autoOptimized": false
+        }
+      ]
+    }
+  ],
+  "defaultOfferRedirectMode": "REGULAR",
+  "realtimeRoutingApi": "DISABLED",
+  "workspace": {
+    "id": "8e8125b1-871a-46cb-be4f-bb341e9ae85d"
+  },
+  "allowedActions": [
+    "EDIT",
+    "DELETE"
+  ]
+}

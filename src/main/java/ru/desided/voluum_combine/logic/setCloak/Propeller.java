@@ -66,12 +66,14 @@ public class Propeller implements SetupCloak{
         VOLUUM_ACCESS_KEY = user.getVoluumAccessKey();
         VOLUUM_PASSWORD = user.getVoluumPassword();
         CONSTVAR3 = user.getCloakConst();
+        LOGIN = trafficSource.getLogin();
+        PASS = trafficSource.getPassword();
         CustomAppender customAppender = new CustomAppender();
         log.addAppender(customAppender);
     }
 
     public void propellerAuth() throws IOException {
-
+//
         Date date = new Date();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("EST"));
@@ -86,19 +88,11 @@ public class Propeller implements SetupCloak{
                 new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json")
         );
 
-//      HttpHost proxy = new HttpHost("zproxy.luminati.io", 22225);
-//        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-//        credsProvider.setCredentials(
-//                new AuthScope("zproxy.luminati.io", 22225),
-//                new UsernamePasswordCredentials("lum-customer-hl_17d43f88-zone-md_1", "mk389141"));
         httpClient = HttpClientBuilder.create()
-//                .setDefaultCredentialsProvider(credsProvider)
-//                .setProxy(proxy)
                 .setDefaultHeaders(headers)
                 .build();
 
         HttpPost httpPost = new HttpPost("https://partners.propellerads.com/v1.0/login_check");
-
         StringEntity entity = new StringEntity("{\"username\":\"" + LOGIN + "\",\"password\":\"" + PASS + "\",\"gRecaptchaResponse\":null,\"type\":\"ROLE_ADVERTISER\",\"fingerprint\":\"6dabbc2b9ac8d06a961fd6efa56130bb\"}");
         httpPost.setEntity(entity);
         JsonNode node = new ObjectMapper().readTree(makeRequest(httpClient, httpPost));
@@ -115,14 +109,52 @@ public class Propeller implements SetupCloak{
         clientCookie.setDomain("partners.propellerads.com");
         cookieStore.addCookie(clientCookie);
 
-
         httpClient = HttpClientBuilder.create()
                 .setDefaultHeaders(authHeaders)
-//                .setDefaultCredentialsProvider(credsProvider)
-//                .setProxy(proxy)
                 .setDefaultCookieStore(cookieStore)
                 .build();
 
+
+//todo auth api propeller
+//        Date date = new Date();
+//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd");
+//        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("EST"));
+//        DATE = simpleDateFormat.format(date);
+//
+//        List<Header> headers = Arrays.asList(
+//                new BasicHeader(HttpHeaders.USER_AGENT, UA),
+//                new BasicHeader(HttpHeaders.REFERER, "https://ssp-api.propellerads.com/v5/docs/"),
+//                new BasicHeader(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
+//                new BasicHeader(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate"),
+//                new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, "en-US,en;q=0.5"),
+//                new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+//        );
+//
+//        httpClient = HttpClientBuilder.create()
+//                .setDefaultHeaders(headers)
+//                .build();
+//        HttpPost httpPost = new HttpPost("https://ssp-api.propellerads.com/v5/adv/login");
+//        StringEntity entity = new StringEntity("{\"username\":\"" + LOGIN + "\",\"password\":\"" + PASS + "\"}");
+//        httpPost.setEntity(entity);
+//        JsonNode node = new ObjectMapper().readTree(makeRequest(httpClient, httpPost));
+////        String resultJson = URLEncoder.encode(node.get("result").toString(), "UTF-8");
+//
+//        TOKEN = node.get("api_token").textValue();
+//        System.out.println(TOKEN);
+//
+//        List<Header> authHeaders = new ArrayList<>(headers);
+//        authHeaders.add(new BasicHeader("authorization", "Bearer " + TOKEN));
+
+//        BasicCookieStore cookieStore = new BasicCookieStore();
+//        BasicClientCookie clientCookie = new BasicClientCookie("user", resultJson);
+//        clientCookie.setDomain("partners.propellerads.com");
+//        cookieStore.addCookie(clientCookie);
+//
+//        httpClient = HttpClientBuilder.create()
+//                .setDefaultHeaders(authHeaders)
+////                .setDefaultCookieStore(cookieStore)
+//                .build();
+//
     }
 
         public void parsingCampaigns() throws IOException, InterruptedException {
@@ -136,7 +168,7 @@ public class Propeller implements SetupCloak{
              * status 8 - stop
              */
 
-
+            String out = null;
             if (isNewbie) {
                 for (Campaign comp : campaignsList) {
 
@@ -149,7 +181,7 @@ public class Propeller implements SetupCloak{
                         HttpPut httpPut = new HttpPut("https://partners.propellerads.com/v1.0/advertiser/campaigns/start/");
                         StringEntity stringEntity = new StringEntity("{\"campaignIds\":[" + comp.getId() + "]}");
                         httpPut.setEntity(stringEntity);
-                        makeRequest(httpClient, httpPut);
+                        out = makeRequest(httpClient, httpPut);
 
                         activeCampaignsList.add(comp);
                         log.info("Start " + comp.getName());

@@ -20,14 +20,14 @@ import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import ru.desided.voluum_combine.LogHandler.CustomAppender;
 import ru.desided.voluum_combine.controllers.OfferController;
-import ru.desided.voluum_combine.entity.AffiliateNetwork;
-import ru.desided.voluum_combine.entity.Offer;
+import ru.desided.voluum_combine.entity.*;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.Advidi.Allowed_Countries;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.Advidi.CommonObject;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.CommonObjectList;
 import ru.desided.voluum_combine.service.CountryService;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLEncoder;
@@ -42,47 +42,43 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class Advidi {
+public class Advidi implements AddOffersLogic{
 
-    private CountryService countryService;
-    private static HttpClient httpClient;
-    private static String UA = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:55.0) Gecko/20100101 Firefox/55.0";
+    private HttpClient httpClient;
+    private String UA = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:55.0) Gecko/20100101 Firefox/55.0";
     private AffiliateNetwork affiliateNetwork;
     private Offer offer;
+    private TrafficSource trafficSource;
+    private CountryService countryService;
+    private User user;
+    private Cloak cloak;
     private String TRAFFIC_TYPE;
     private String AFFILIATE_LOGIN;
     private String AFFILIATE_PASSWORD;
-    private String AFFILIATE_NETWORK_NAME;
     private String OFFER_ID;
     private String CREO_ID;
     private String BOT_ANSWER;
-    static Logger log = Logger.getLogger(Advidi.class.getName());
+    private String offerContractId;
+    static Logger log = Logger.getLogger(ClickDealer.class.getName());
 
-
-    public Offer startAdvidi(AffiliateNetwork affiliateNetwork, Offer offer, CountryService countryService) {
-
-        this.countryService = countryService;
+    public Advidi(AffiliateNetwork affiliateNetwork, TrafficSource trafficSource,
+                  Offer offer, CountryService countryService, User user, Cloak cloak){
         this.affiliateNetwork = affiliateNetwork;
         this.offer = offer;
-        AFFILIATE_NETWORK_NAME = affiliateNetwork.getNameVoluum();
+        this.trafficSource = trafficSource;
+        this.countryService = countryService;
+        this.user = user;
+        this.cloak = cloak;
         AFFILIATE_LOGIN = affiliateNetwork.getLogin();
         AFFILIATE_PASSWORD = affiliateNetwork.getPassword();
         OFFER_ID = offer.getOfferId();
         CREO_ID = offer.getLandId();
         CustomAppender customAppender = new CustomAppender();
         log.addAppender(customAppender);
-
-        try {
-            setupClient();
-            log.info(startOffers(affiliateNetwork));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return this.offer;
     }
-    private void setupClient() throws IOException {
 
+    @Override
+    public void login() throws IOException {
         ZoneId zoneId = ZoneId.of("-05:00");
         ZonedDateTime time = ZonedDateTime.ofInstant(Instant.now(), zoneId);
         String time_now = DateTimeFormatter.ofPattern("yyyy-M-dd").format(time);
@@ -96,16 +92,16 @@ public class Advidi {
                 new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded; charset=UTF-8")
         );
 
-            HttpHost proxy = new HttpHost(affiliateNetwork.getProxyHost(), affiliateNetwork.getProxyPort());
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(
-                    new AuthScope(affiliateNetwork.getProxyHost(), affiliateNetwork.getProxyPort()),
-                    new UsernamePasswordCredentials(affiliateNetwork.getProxyUser(), affiliateNetwork.getProxyPassword()));
-            httpClient = HttpClientBuilder.create()
-                    .setDefaultCredentialsProvider(credsProvider)
-                    .setProxy(proxy)
-                    .setDefaultHeaders(headers)
-                    .build();
+        HttpHost proxy = new HttpHost(affiliateNetwork.getProxyHost(), affiliateNetwork.getProxyPort());
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(
+                new AuthScope(affiliateNetwork.getProxyHost(), affiliateNetwork.getProxyPort()),
+                new UsernamePasswordCredentials(affiliateNetwork.getProxyUser(), affiliateNetwork.getProxyPassword()));
+        httpClient = HttpClientBuilder.create()
+                .setDefaultCredentialsProvider(credsProvider)
+                .setProxy(proxy)
+                .setDefaultHeaders(headers)
+                .build();
 
         HttpPost post = new HttpPost("https://ctrack.advidi.com/login.ashx");
         String body = "u=" + URLEncoder.encode(AFFILIATE_LOGIN, "UTF-8") + "&p=" + URLEncoder.encode(AFFILIATE_PASSWORD, "UTF-8") + "";
@@ -131,10 +127,10 @@ public class Advidi {
                 .setDefaultCredentialsProvider(credsProvider)
                 .setProxy(proxy)
                 .build();
-
     }
 
-    private Offer startOffers(AffiliateNetwork AffiliateNetworksEntity) throws IOException {
+    @Override
+    public Offer addOffer() throws IOException {
 
         HttpPost post = new HttpPost("https://ctrack.advidi.com/affiliates/Extjs.ashx?s=contracts");
         String body = "groupBy=&groupDir=ASC&cu=1&c=" + OFFER_ID + "&cat=0&sv=&cn=&pf=&st=0&m=&ct=&pmin=&pmax=&mycurr=true&t=&p=0&n=30";
@@ -146,58 +142,55 @@ public class Advidi {
         ObjectMapper objectMapper = new ObjectMapper();
         CommonObjectList commonOfferList = objectMapper.readValue(out, CommonObjectList.class);
 
-        for (CommonObject commonOffer : commonOfferList.getRows()){
+        for (CommonObject commonOffer : commonOfferList.getRows()) {
             String offerName = commonOffer.getName();
-            offer.setAffiliateNetwork(AffiliateNetworksEntity);
+            offer.setAffiliateNetwork(affiliateNetwork);
             offer.setOfferId(commonOffer.getCampaignId());
             offer.setStatus(commonOffer.getStatus());
             offer.setName(offerName);
             offer.setPayoutConverted(new BigDecimal(commonOffer.getPriceConverted()).setScale(3, RoundingMode.HALF_UP).stripTrailingZeros().toString());
-            String country_code;
-            String country_name;
+            offerContractId = commonOffer.getContractId();
 
-            if (commonOffer.getStatus().equals("Public")){
+            if (commonOffer.getStatus().equals("Public")) {
                 out = applyPublicOffer(commonOffer);
                 ObjectNode node = new ObjectMapper().configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
                         .readValue(out, ObjectNode.class);
-            } else if (commonOffer.getStatus().equals("Pending")){
+            } else if (commonOffer.getStatus().equals("Pending")) {
                 BOT_ANSWER = OFFER_ID + " also Pending";
                 offer.setStatus("Pending");
                 log.info(BOT_ANSWER);
                 return offer;
-            } else if (commonOffer.getStatus().equals("Apply To Run")){
+            } else if (commonOffer.getStatus().equals("Apply To Run")) {
                 applyPublicOffer(commonOffer);
                 BOT_ANSWER = OFFER_ID + " Apply To Run";
                 offer.setStatus("Pending");
                 log.info(BOT_ANSWER);
                 return offer;
-            } else if (commonOffer.getStatus().equals("Pending")){
+            } else if (commonOffer.getStatus().equals("Pending")) {
                 BOT_ANSWER = OFFER_ID + " also Pending";
                 offer.setStatus("Pending");
                 log.info(BOT_ANSWER);
                 return offer;
-            } else if (commonOffer.getPriceConverted() == null){
+            } else if (commonOffer.getPriceConverted() == null || offer.getPayoutConverted().equals("0")) {
                 BOT_ANSWER = OFFER_ID + " not available price";
                 offer.setStatus("Pending");
                 return offer;
             }
 
-
             try {
                 Pattern pattern = Pattern.compile("- [A-Z]{2,} (\\[|-)");
                 Matcher matcher = pattern.matcher(offerName);
                 matcher.find();
-                String countryLine  = matcher.group();
-//                String countryLine = offerName.substring(offerName.lastIndexOf("- "), offerName.indexOf(" ["));
+                String countryLine = matcher.group();
                 countryLine = countryLine.replace("-", "").replace("[", "").trim();
 
-                if(countryLine.contains("UK")){
+                if (countryLine.contains("UK")) {
                     countryLine = countryLine.replace("UK", "GB");
                 }
 
-                if (countryLine.matches(".*\\d+.*")){
+                if (countryLine.matches(".*\\d+.*")) {
                     break;
-                } else if (countryLine.contains("/")){
+                } else if (countryLine.contains("/")) {
 
                     /**
                      * add first county of list - change
@@ -227,55 +220,19 @@ public class Advidi {
                 }
                 log.info(countryLine);
 
-            } catch (StringIndexOutOfBoundsException ex){
+            } catch (StringIndexOutOfBoundsException ex) {
                 log.info(ex.toString());
             }
 
-            country_code = offer.getCountryCode().toUpperCase();
-            country_name = offer.getCountryName();
-            if (offer.getName().toLowerCase().contains("web") || offer.getName().toLowerCase().contains("responsive")){
+            if (offer.getName().toLowerCase().contains("web") || offer.getName().toLowerCase().contains("responsive")) {
                 TRAFFIC_TYPE = "WEB";
             } else {
                 TRAFFIC_TYPE = "MOB";
             }
 
             offer.setTypeTraffic(TRAFFIC_TYPE);
-            post = new HttpPost("https://ctrack.advidi.com/affiliates/Extjs.ashx?s=creatives&cont_id=" + commonOffer.getContractId() + "");
-            body = "groupBy=&groupDir=ASC";
-            stringEntity = new StringEntity(body);
-            post.setEntity(stringEntity);
-            out = makeRequest(httpClient, post); //return null if offer pending
+            break;
 
-            if (out.equals("")){
-                offer.setStatus("Pending");
-                return offer;
-            }
-            objectMapper = new ObjectMapper();
-            CommonObjectList commonCreativesList = objectMapper.readValue(out, CommonObjectList.class);
-
-            for (CommonObject commonObjectOffer : commonCreativesList.getRows()){
-
-                log.info("creo " + commonObjectOffer.getId());
-
-                if (!CREO_ID.equals ("") && commonObjectOffer.getId().contains(CREO_ID)){
-                    offer.setLink(commonObjectOffer.getUniqueLink()  + "{os}&s3={osversion}&s2=");
-                    break;
-                } else {
-                    offer.setLink(commonCreativesList.getRows().get(0).getUniqueLink() + "{os}&s3={osversion}&s2=");
-                }
-                log.info(commonObjectOffer.getId() + " " + offer.getLink());
-            }
-
-            output = String.format("offer %s complete. link - %s, campaign id - %s, name - %s",
-                    OFFER_ID, offer.getLink(), offer.getOfferId(), offer.getName());
-//
-            log.info(TRAFFIC_TYPE);
-            log.info(country_code);
-            log.info(country_name);
-            log.info(offer.getName());
-            log.info(offer.getPayoutConverted());
-            log.info(CREO_ID + " " + offer.getLink());
-            return offer;
         }
 
         BOT_ANSWER = output;
@@ -286,6 +243,72 @@ public class Advidi {
             return offer;
         }
         return offer;
+    }
+
+    @Override
+    public Offer getCreo() throws IOException {
+
+        HttpPost post= new HttpPost("https://ctrack.advidi.com/affiliates/Extjs.ashx?s=creatives&cont_id=" + offerContractId + "");
+        String body = "groupBy=&groupDir=ASC";
+        StringEntity stringEntity = new StringEntity(body);
+        post.setEntity(stringEntity);
+        String out = makeRequest(httpClient, post); //return null if offer pending
+
+        if (out.equals("")) {
+            offer.setStatus("Pending");
+            return offer;
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        CommonObjectList commonCreativesList = objectMapper.readValue(out, CommonObjectList.class);
+
+        for (CommonObject commonObjectOffer : commonCreativesList.getRows()){
+
+            log.info("creo " + commonObjectOffer.getId());
+
+            if (!CREO_ID.equals ("") && commonObjectOffer.getId().contains(CREO_ID)){
+                offer.setLink(commonObjectOffer.getUniqueLink()  + "{os}&s3={osversion}&s2=");
+                break;
+            } else {
+                offer.setLink(commonCreativesList.getRows().get(0).getUniqueLink() + "{os}&s3={osversion}&s2=");
+            }
+            log.info(commonObjectOffer.getId() + " " + offer.getLink());
+        }
+
+        out = String.format("offer %s complete. link - %s, campaign id - %s, name - %s",
+                OFFER_ID, offer.getLink(), offer.getOfferId(), offer.getName());
+//
+        log.info(TRAFFIC_TYPE);
+        log.info(offer.getName());
+        log.info(offer.getPayoutConverted());
+        log.info(out);
+        return offer;
+
+    }
+
+    @Override
+    public void addVoluum() throws IOException {
+        Voluum voluum = new Voluum(true, offer, affiliateNetwork, trafficSource, user, cloak, countryService);
+        voluum.voluumAuth();
+        voluum.setupVoluum();
+    }
+
+    @Override
+    public void propellerSmart() throws IOException {
+        Propeller propeller = new Propeller(offer, trafficSource);
+        propeller.propellerAuth();
+        propeller.propellerSmart();
+    }
+
+    @Override
+    public void propellerHigh() throws IOException {
+        Propeller propeller = new Propeller(offer, trafficSource);
+        propeller.propellerAuth();
+        propeller.propellerHigh();
+    }
+
+    @Override
+    public Offer setProp() {
+        return null;
     }
 
     private String applyPublicOffer(CommonObject offer) throws IOException {
@@ -318,4 +341,29 @@ public class Advidi {
         }
         return responseBody;
     }
+
+
 }
+
+//    public Offer startAdvidi(AffiliateNetwork affiliateNetwork, Offer offer, CountryService countryService) {
+//
+//        this.countryService = countryService;
+//        this.affiliateNetwork = affiliateNetwork;
+//        this.offer = offer;
+//        AFFILIATE_NETWORK_NAME = affiliateNetwork.getNameVoluum();
+//        AFFILIATE_LOGIN = affiliateNetwork.getLogin();
+//        AFFILIATE_PASSWORD = affiliateNetwork.getPassword();
+//        OFFER_ID = offer.getOfferId();
+//        CREO_ID = offer.getLandId();
+//        CustomAppender customAppender = new CustomAppender();
+//        log.addAppender(customAppender);
+//
+//        try {
+//            setupClient();
+//            log.info(startOffers(affiliateNetwork));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return this.offer;
+//    }

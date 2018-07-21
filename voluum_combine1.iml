@@ -22,7 +22,7 @@
       <configuration>
         <datasource-map>
           <unit-entry name="a.xml" value="6face8f4-d00f-4f02-858a-81e92aece2e1" />
-          <unit-entry name="hibernate.cfg.xml" value="6face8f4-d00f-4f02-858a-81e92aece2e1" />
+          <unit-entry name="hibernate.cfg.xml" value="3bca5320-43e9-4dc0-8e3e-9ab96631465b" />
         </datasource-map>
         <naming-strategy-map>
           <unit-entry name="hibernate.cfg.xml" />

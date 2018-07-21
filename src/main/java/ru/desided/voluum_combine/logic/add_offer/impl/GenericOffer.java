@@ -1,4 +1,4 @@
-package ru.desided.voluum_combine.logic.add_offer;
+package ru.desided.voluum_combine.logic.add_offer.impl;
 
 import ru.desided.voluum_combine.entity.Offer;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.Adtrafico.OfferAdtrafico;

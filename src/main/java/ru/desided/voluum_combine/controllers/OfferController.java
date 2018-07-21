@@ -1,7 +1,6 @@
 package ru.desided.voluum_combine.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,17 +12,13 @@ import org.springframework.web.servlet.ModelAndView;
 import ru.desided.voluum_combine.LogHandler.CustomAppender;
 import ru.desided.voluum_combine.LogHandler.CustomSingletonAdapter;
 import ru.desided.voluum_combine.entity.*;
-import ru.desided.voluum_combine.logic.add_offer.AddOffers;
-import ru.desided.voluum_combine.logic.add_offer.AddOffersImpl;
+import ru.desided.voluum_combine.logic.add_offer.AddAffNets;
+import ru.desided.voluum_combine.logic.add_offer.AddAffNetsImpl;
 import ru.desided.voluum_combine.repository.AuthRepository;
 import ru.desided.voluum_combine.service.*;
-import ru.desided.voluum_combine.service.impl.CountryServiceImpl;
-import ru.desided.voluum_combine.service.impl.OfferServiceImpl;
 
-import javax.jws.WebParam;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,7 +76,7 @@ public class OfferController {
 
     @RequestMapping(value = "/check_pending", method = RequestMethod.GET)
     public void check_pending() throws JsonProcessingException {
-        AddOffers addOffers = new AddOffersImpl();
+        AddAffNets addAffNets = new AddAffNetsImpl();
         List<Offer> offers = offerService.findByStatusEquals("Pending");
         for (Offer offer :offers) {
 
@@ -89,12 +84,12 @@ public class OfferController {
 //            TrafficSource trafficSource =
             if (StringUtils.containsIgnoreCase(affiliateNetwork.getNameVoluum(), "advidi")) {
                 CountryService countryService = this.countryService;
-//                addOffers.AddAdvidi(affiliateNetwork, trafficSource, newCampaign, offer, countryService, user, cloak);
+//                addAffNets.AddAdvidi(affiliateNetwork, trafficSource, newCampaign, offer, countryService, user, cloak);
                 if (offer.getStatus().equals("Active")){
                     offerService.deleteOffer(offer);
                 }
             } else {
-//            offerListToSave = addOffers.AddClickDealer(affiliateNetwork, trafficSource, newCampaign, offers);
+//            offerListToSave = addAffNets.AddClickDealer(affiliateNetwork, trafficSource, newCampaign, offers);
             }
         }
     }
@@ -120,22 +115,22 @@ public class OfferController {
         });
 
         CustomSingletonAdapter.getTheInstance().getEventsList().clear();
-        AddOffers addOffers = new AddOffersImpl();
+        AddAffNets addAffNets = new AddAffNetsImpl();
         CountryService countryService = this.countryService;
         for (Offer offer : offers) {
             if (StringUtils.containsIgnoreCase(affiliateNetwork.getNameVoluum(), "advidi")) {
-                addOffers.addAdvidi(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
-                if (offer.getStatus() != "Not Available" || offerService.findByOfferIdAndAffiliateNetwork(offer, affiliateNetwork) != null) {
+                addAffNets.addAdvidi(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
+                if (!offer.getStatus().contains("Not Available") || offerService.findByOfferIdAndAffiliateNetwork(offer, affiliateNetwork) != null) {
                     offerService.addOffer(offer);
                 }
             } else if (StringUtils.containsIgnoreCase(affiliateNetwork.getNameVoluum(), "clickdealer")){
-                addOffers.addClickDealer(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
-                if (offer.getStatus() != "Not Available" || offerService.findByOfferIdAndAffiliateNetwork(offer, affiliateNetwork) != null) {
+                addAffNets.addClickDealer(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
+                if (!offer.getStatus().contains("Not Available") || offerService.findByOfferIdAndAffiliateNetwork(offer, affiliateNetwork) != null) {
                     offerService.addOffer(offer);
                 }
             } else if (StringUtils.containsIgnoreCase(affiliateNetwork.getNameVoluum(), "adtrafico")){
-                addOffers.addAdtrafico(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
-                if (offer.getStatus() != "Not Available" || offerService.findByOfferIdAndAffiliateNetwork(offer, affiliateNetwork) != null) {
+                addAffNets.addAdtrafico(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
+                if (!offer.getStatus().contains("Not Available") || offerService.findByOfferIdAndAffiliateNetwork(offer, affiliateNetwork) != null) {
                     offerService.addOffer(offer);
                 }
             }

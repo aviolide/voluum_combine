@@ -1,6 +1,7 @@
 package ru.desided.voluum_combine.logic.add_offer;
 
 import ru.desided.voluum_combine.entity.*;
+import ru.desided.voluum_combine.logic.add_offer.AddAffNets;
 import ru.desided.voluum_combine.logic.add_offer.impl.Adtrafico;
 import ru.desided.voluum_combine.logic.add_offer.impl.Advidi;
 import ru.desided.voluum_combine.logic.add_offer.impl.ClickDealer;
@@ -8,27 +9,26 @@ import ru.desided.voluum_combine.logic.add_offer.impl.Voluum;
 import ru.desided.voluum_combine.service.CountryService;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-public class AddOffersImpl implements AddOffers {
-    @Override
-    public void Auth() {
-
-    }
+public class AddAffNetsImpl implements AddAffNets {
 
     @Override
     public Offer addAdvidi(AffiliateNetwork affiliateNetwork, TrafficSource trafficSource,
                                  Offer offer, CountryService countryService, User user, Cloak cloak) throws IOException {
-        Advidi advidi = new Advidi();
+        Advidi advidi = new Advidi(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
         offer.setUser(user);
         offer.setAffiliateNetwork(affiliateNetwork);
-        advidi.startAdvidi(affiliateNetwork, offer, countryService);
+        advidi.login();
+        advidi.addOffer();
 
         if (offer.getStatus().equalsIgnoreCase("Active")){
-            Voluum voluum = new Voluum(true, offer, affiliateNetwork, trafficSource, user, cloak, countryService);
-            voluum.voluumAuth();
-            voluum.setupVoluum();
+            advidi.getCreo();
+            advidi.addVoluum();
+            if (offer.getSmartHigh()){
+                advidi.propellerHigh();
+            } else {
+                advidi.propellerSmart();
+            }
         }
 
         return offer;
@@ -41,11 +41,17 @@ public class AddOffersImpl implements AddOffers {
             offer.setUser(user);
             offer.setAffiliateNetwork(affiliateNetwork);
             ClickDealer clickDealer = new ClickDealer(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
-            clickDealer.setup();
+            clickDealer.login();
             clickDealer.addOffer();
+
             if (offer.getStatus().equals("Active")) {
                 clickDealer.getCreo();
                 clickDealer.addVoluum();
+                if (offer.getSmartHigh()){
+                    clickDealer.propellerHigh();
+                } else {
+                    clickDealer.propellerSmart();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -54,23 +60,24 @@ public class AddOffersImpl implements AddOffers {
     }
 
     @Override
-    public Offer addAdtrafico(AffiliateNetwork affiliateNetwork, TrafficSource trafficSource, Offer offer, CountryService countryService, User user, Cloak cloak) throws IOException {
+    public Offer addAdtrafico(AffiliateNetwork affiliateNetwork, TrafficSource trafficSource, Offer offer,
+                              CountryService countryService, User user, Cloak cloak) throws IOException {
         offer.setUser(user);
 
         offer.setAffiliateNetwork(affiliateNetwork);
         Adtrafico adtrafico = new Adtrafico(affiliateNetwork, trafficSource, offer, countryService, user, cloak);
-        adtrafico.setup();
+        adtrafico.login();
         adtrafico.addOffer();
         if (offer.getStatus().equalsIgnoreCase("active")) {
             adtrafico.getCreo();
             adtrafico.addVoluum();
+            if (offer.getSmartHigh()){
+                adtrafico.propellerHigh();
+            } else {
+                adtrafico.propellerSmart();
+            }
         }
     return offer;
-    }
-
-    @Override
-    public void AddVoluum() {
-
     }
 
     @Override
@@ -78,8 +85,4 @@ public class AddOffersImpl implements AddOffers {
 
     }
 
-    @Override
-    public void Start() {
-
-    }
 }

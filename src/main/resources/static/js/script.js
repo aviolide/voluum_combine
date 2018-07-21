@@ -207,7 +207,13 @@ $(document).ready(function(){
         else {
             var newoldcampaign = 'false'
         }
-        $('<tr><td>'+idcompaign+'</td><td>'+idland+'</td><td>'+posfix+'</td><td>'+comment+'</td><td>'+idnew+'</td><td>'+newoldcampaign+'</td><td><div class="btn btnofferclear">Clear</div></td></tr>').appendTo( $("#addedoffers tbody") );
+        if ( $("input[name='smarthigh']").is(":checked") ) {
+            var smarthigh = 'true';
+        }
+        else {
+            var smarthigh = 'false'
+        }
+        $('<tr><td>'+idcompaign+'</td><td>'+idland+'</td><td>'+posfix+'</td><td>'+comment+'</td><td>'+idnew+'</td><td>'+newoldcampaign+'</td><td>'+smarthigh+'</td><td><div class="btn btnofferclear">Clear</div></td></tr>').appendTo( $("#addedoffers tbody") );
 
     });
     $('body').on('click', '.btnofferclear', function(){
@@ -216,7 +222,7 @@ $(document).ready(function(){
         });
 
         function printoffertable(input) {
-            var table = '<table><tr><th>ID compaign</th><th>ID land</th><th>Comment</th><th>ID for new</th><th>New/Old</th></tr>';
+            var table = '<table><tr><th>ID compaign</th><th>ID land</th><th>Comment</th><th>ID for new</th><th>New/Old</th><th>Smart/High</th></tr>';
             $.each(input.campaign_list,function(index, value){
                 table += '<tr>'
                 $.each(value,function(index2, value2){
@@ -247,7 +253,7 @@ $(document).ready(function(){
                         var val = $(value2).text();
                         v[index2+1] = val;
                     });
-                    camps_out.push({offer_id: v[1], land_id: v[2], postfix: v[3], comment: v[4], campaign_edit: v[5], old_campaign: v[6]});
+                    camps_out.push({offer_id: v[1], land_id: v[2], postfix: v[3], comment: v[4], campaign_short: v[5], old_campaign: v[6], smart_high: v[7]});
                 }
             });
             out.campaigns_list = camps_out;

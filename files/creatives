@@ -1,30 +1,9 @@
 {
-  "request": {
-    "Target": "Affiliate_Offer",
-    "Format": "json",
-    "Service": "HasOffers",
-    "Version": "2",
-    "api_key": "5c36a814f3edd8be5d8cf2b45d4cb2143a099e05d67fb411ed5fd8f373d5397d",
-    "Method": "getGeoTargeting",
-    "id": "3572",
-    "_": "1531576301003"
-  },
-  "response": {
-    "status": 1,
-    "httpStatus": 200,
-    "data": {
-      "Countries": {
-        "752": {
-          "id": "752",
-          "code": "SE",
-          "name": "Sweden"
+    "affiliate_network" : "asda",
+    "campaigns_list" : [
+        {
+            "campaign" : "123",
+            "smart_high" : "true"
         }
-      },
-      "Regions": "asdasd",
-      "Cities": [],
-      "Exclude": []
-    },
-    "errors": [],
-    "errorMessage": null
-  }
+    ]
 }

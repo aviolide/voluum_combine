@@ -19,9 +19,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import ru.desided.voluum_combine.LogHandler.CustomAppender;
-import ru.desided.voluum_combine.controllers.OfferController;
 import ru.desided.voluum_combine.entity.*;
-import ru.desided.voluum_combine.logic.add_offer.AddOffers1;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.ClickDealer.Campaigns;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.ClickDealer.CommonObjectCD;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.ClickDealer.Creative;
@@ -37,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class ClickDealer implements AddOffers1 {
+public class ClickDealer implements AddOffersLogic {
 
     private static HttpClient httpClient;
     private static String UA = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:55.0) Gecko/20100101 Firefox/55.0";
@@ -47,10 +45,6 @@ public class ClickDealer implements AddOffers1 {
     private CountryService countryService;
     private User user;
     private Cloak cloak;
-    private String TRAFFIC_TYPE;
-    private String AFFILIATE_LOGIN;
-    private String AFFILIATE_PASSWORD;
-    private String AFFILIATE_NETWORK_NAME;
     private String OFFER_ID;
     private String CREO_ID;
     private String API_KEY;
@@ -66,9 +60,6 @@ public class ClickDealer implements AddOffers1 {
         this.countryService = countryService;
         this.user = user;
         this.cloak = cloak;
-        AFFILIATE_NETWORK_NAME = affiliateNetwork.getNameVoluum();
-        AFFILIATE_LOGIN = affiliateNetwork.getLogin();
-        AFFILIATE_PASSWORD = affiliateNetwork.getPassword();
         OFFER_ID = offer.getOfferId();
         CREO_ID = offer.getLandId();
         API_KEY = affiliateNetwork.getApiKey();
@@ -79,7 +70,7 @@ public class ClickDealer implements AddOffers1 {
     }
 
     @Override
-    public void setup() {
+    public void login() {
         ZoneId zoneId = ZoneId.of("-05:00");
         ZonedDateTime time = ZonedDateTime.ofInstant(Instant.now(), zoneId);
         String time_now = DateTimeFormatter.ofPattern("yyyy-M-dd").format(time);
@@ -102,16 +93,13 @@ public class ClickDealer implements AddOffers1 {
                 .setProxy(proxy)
                 .setDefaultHeaders(headers)
                 .build();
-    }
-
-    @Override
-    public void login() {
 
     }
 
 
     @Override
     public Offer addOffer() throws IOException {
+
         HttpGet get = new HttpGet("https://partners.clickdealer.com/affiliates/api/1/offers.asmx/OfferFeed?api_key=" + API_KEY + "&affiliate_id=" + AFFILIATE_ID +"&campaign_name=" + OFFER_ID);
         String out = makeRequest(httpClient, get);
 
@@ -127,7 +115,6 @@ public class ClickDealer implements AddOffers1 {
                 offer.setStatus(commonOffer.getOfferStatus().get("status_name"));
                 offer.setCountryName(commonOffer.getAllowedCountries().get(0).getCountry_name());
                 offer.setCountryCode(commonOffer.getAllowedCountries().get(0).getCountry_code());
-
 
                 if (commonOffer.getOfferStatus().containsValue("2")) {
                     get = new HttpGet("https://partners.clickdealer.com/affiliates/api/1/offers.asmx/ApplyForOffer?api_key=" + API_KEY + "&affiliate_id=" + AFFILIATE_ID +"&" +
@@ -195,6 +182,20 @@ public class ClickDealer implements AddOffers1 {
         Voluum voluum = new Voluum(true, offer, affiliateNetwork, trafficSource, user, cloak, countryService);
         voluum.voluumAuth();
         voluum.setupVoluum();
+    }
+
+    @Override
+    public void propellerSmart() throws IOException {
+        Propeller propeller = new Propeller(offer, trafficSource);
+        propeller.propellerAuth();
+        propeller.propellerSmart();
+    }
+
+    @Override
+    public void propellerHigh() throws IOException {
+        Propeller propeller = new Propeller(offer, trafficSource);
+        propeller.propellerAuth();
+        propeller.propellerHigh();
     }
 
     @Override

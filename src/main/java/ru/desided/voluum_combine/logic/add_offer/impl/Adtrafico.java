@@ -16,13 +16,9 @@ import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import ru.desided.voluum_combine.LogHandler.CustomAppender;
 import ru.desided.voluum_combine.entity.*;
-import ru.desided.voluum_combine.logic.add_offer.AddOffers1;
-import ru.desided.voluum_combine.logic.add_offer.GenericOffer;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.Adtrafico.Data;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.Adtrafico.OfferAdtrafico;
 import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.Adtrafico.Response;
-import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.Adtrafico.WrapperMain;
-import ru.desided.voluum_combine.logic.add_offer.POJO_JSON.CommonObjectList;
 import ru.desided.voluum_combine.service.CountryService;
 
 import java.io.IOException;
@@ -30,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class Adtrafico implements AddOffers1 {
+public class Adtrafico implements AddOffersLogic {
 
     private static HttpClient httpClient;
     private static String UA = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:55.0) Gecko/20100101 Firefox/55.0";
@@ -70,7 +66,8 @@ public class Adtrafico implements AddOffers1 {
     }
 
     @Override
-    public void setup() {
+    public void login() {
+
         List<Header> headers = Arrays.asList(
                 new BasicHeader(HttpHeaders.USER_AGENT, UA),
                 new BasicHeader(HttpHeaders.ACCEPT, "application/json"),
@@ -80,11 +77,6 @@ public class Adtrafico implements AddOffers1 {
         httpClient = HttpClientBuilder.create()
                 .setDefaultHeaders(headers)
                 .build();
-    }
-
-    @Override
-    public void login() {
-
     }
 
     @Override
@@ -139,6 +131,20 @@ public class Adtrafico implements AddOffers1 {
         Voluum voluum = new Voluum(true, offer, affiliateNetwork, trafficSource, user, cloak, countryService);
         voluum.voluumAuth();
         voluum.setupVoluum();
+    }
+
+    @Override
+    public void propellerSmart() throws IOException {
+        Propeller propeller = new Propeller(offer, trafficSource);
+        propeller.propellerAuth();
+        propeller.propellerSmart();
+    }
+
+    @Override
+    public void propellerHigh() throws IOException {
+        Propeller propeller = new Propeller(offer, trafficSource);
+        propeller.propellerAuth();
+        propeller.propellerHigh();
     }
 
     @Override

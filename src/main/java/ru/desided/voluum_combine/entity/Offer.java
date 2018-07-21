@@ -31,8 +31,12 @@ public class Offer {
     private AffiliateNetwork affiliateNetwork;
     @JsonProperty(value = "old_campaign")
     private Boolean oldCampaign;
-    @JsonProperty(value = "campaign_edit")
-    private String campaignEdit;
+    private String campaignLink;
+    @JsonProperty(value = "campaign_short")
+    private String campaignShort;
+    private String offerCost;
+    @JsonProperty(value = "smart_high")
+    private Boolean smartHigh;
 
     @ManyToOne
     @JoinColumn(name = "nick")
@@ -44,7 +48,6 @@ public class Offer {
         this.user = user;
     }
 
-
     @ManyToOne
     @JoinColumn(name = "affiliate_network")
     public AffiliateNetwork getAffiliateNetwork() {
@@ -53,16 +56,6 @@ public class Offer {
 
     public void setAffiliateNetwork(AffiliateNetwork affiliateNetwork) {
         this.affiliateNetwork = affiliateNetwork;
-    }
-
-    @Basic
-    @Column(name = "campaign_edit")
-    public String getCampaignEdit() {
-        return campaignEdit;
-    }
-
-    public void setCampaignEdit(String campaignEdit) {
-        this.campaignEdit = campaignEdit;
     }
 
     @Basic
@@ -84,6 +77,7 @@ public class Offer {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
     @Basic
     @Column(name = "posfix_name")
     public String getPostfix() {
@@ -216,5 +210,45 @@ public class Offer {
     public int hashCode() {
 
         return Objects.hash(id, offerId, landId, status, name, link, countryCode, countryName, typeTraffic, payoutConverted);
+    }
+
+    @Basic
+    @Column(name = "campaign_link")
+    public String getCampaignLink() {
+        return campaignLink;
+    }
+
+    public void setCampaignLink(String campaignLink) {
+        this.campaignLink = campaignLink;
+    }
+
+    @Basic
+    @Column(name = "campaign_short")
+    public String getCampaignShort() {
+        return campaignShort;
+    }
+
+    public void setCampaignShort(String campaignShort) {
+        this.campaignShort = campaignShort;
+    }
+
+    @Basic
+    @Column(name = "offer_cost")
+    public String getOfferCost() {
+        return offerCost;
+    }
+
+    public void setOfferCost(String offerCost) {
+        this.offerCost = offerCost;
+    }
+
+    @Basic
+    @Column(name = "smart_high")
+    public Boolean getSmartHigh() {
+        return smartHigh;
+    }
+
+    public void setSmartHigh(Boolean smartHigh) {
+        this.smartHigh = smartHigh;
     }
 }

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns="http://www.w3.org/1999/html">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title></title>
+
+
+	<link th:href="@{/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+	<link th:href="@{/css/style.css}" rel="stylesheet">
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+
+</head>
+<body>
+
+<div class="page">
+	<div class="container-fluid pl-0 h-100">
+		<div class="row h-100">
+			<div class="col-sm-2 bg-dark">
+				 <nav class="navbar navbar-expand navbar-dark flex-md-column flex-row align-items-start py-2">
+					<a class="navbar-brand" href="index.html">Logo</a>
+					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav1" aria-controls="nav1" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div class="collapse navbar-collapse" id="nav1">
+						<ul class="flex-md-column flex-row navbar-nav w-100 justify-content-between">
+							<li class="nav-item">
+								<a class="nav-link pl-0 text-nowrap" th:href="@{/main/}"><span class="font-weight-bold">Dashboard</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/add_offer/}"><span class="d-none d-md-inline">Add offers</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/set_cloak/}"><span class="d-none d-md-inline">Set cloak</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/costs/}"><span class="d-none d-md-inline">Costs</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/monitoring/}"></i> <span class="d-none d-md-inline">Monitoring</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{#}"><span class="d-none d-md-inline">Analyze</span></a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link pl-0" th:href="@{/profile/}"><span class="d-none d-md-inline">Profile</span></a>
+							</li>
+						</ul>
+					</div>
+				</nav>
+			</div>
+			<div class="col-sm-10">
+						<div class="row">
+							<div class="col-sm-12">
+								<p>Choose Traffic Source</p>
+								<th:block th:each="traffic_list : ${trafficList}">
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="trafficsources" id="rad1" th:value="${traffic_list.nameVoluum}" checked>
+										<label class="form-check-label" for="rad1" th:text="${traffic_list.nameVoluum}"></label>
+									</div>
+								</th:block>
+							</div>
+						</div>
+						<hr/>
+						
+						<div class="row">
+							<div class="col-sm-12">
+								
+								<div class="btn-box">
+									<a href="/voluum_combine/monitoring/logging" target="_blank">
+										<div id="cloakstart" class="btn btn-primary mr-sm-2">Start</div>
+									</a>
+								</div>
+
+								<div class="btn-box">
+									<div id="cloakstop" class="btn btn-primary mr-sm-2">Stop</div>
+								</div>
+							</div>
+						</div>
+
+
+					
+					
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script th:src="@{/js/jquery-1.12.4.min.js}"></script>
+<script th:src="@{/js/popper.min.js}"></script>
+
+<script th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
+<script th:src="@{/js/script.js}"></script>
+	
+<script>
+
+	$(document).ready(function(){
+		var BASE_URL = "/voluum_combine";
+		
+		$('#cloakstart').click( function(){
+			var out = new Object();
+			var sub = [];
+			$("input[name=trafficsources]:checked").each( function () {
+				sub.push( {name_voluum: $(this).val()} );
+			});
+			out.traffic_sources = sub;
+			console.log(out);
+			$.ajax({
+				url: BASE_URL+'/monitoring/start',
+				cache: false,
+				type : "POST",
+				dataType : "json",
+                contentType : "application/json",
+				data : JSON.stringify( out ),
+				success : function(result) {
+					console.log(result);
+				},
+				error: function(xhr, resp, text) {
+					console.log(xhr, resp, text);
+				}
+			})
+		});
+        $('#cloakstop').click( function(){
+            $.ajax({
+                url: BASE_URL+'/monitoring/stop',
+                cache: false,
+                type : "GET",
+                dataType : "json",
+                // contentType : "application/json",
+                // data : JSON.stringify( out ),
+                success : function(result) {
+                    console.log(result);
+                },
+                error: function(xhr, resp, text) {
+                    console.log(xhr, resp, text);
+                }
+            })
+        });
+	});
+</script>
+</body>
+</html>

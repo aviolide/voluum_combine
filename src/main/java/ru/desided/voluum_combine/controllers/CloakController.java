@@ -43,6 +43,8 @@ public class CloakController {
     @Autowired
     AuthRepository authRepository;
 
+    //todo change login to auth rep
+
     private User user;
     static Logger log = Logger.getLogger(Cloak.class.getName());
 
@@ -55,7 +57,7 @@ public class CloakController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("set_cloak");
         modelAndView.addObject("variable", user.getCloakConst());
-        modelAndView.addObject("trafficList", trafficSourceService.findAllByUser(userService.findByNick("Finik")));
+        modelAndView.addObject("trafficList", trafficSourceService.findAllByUser(user));
 
         return modelAndView;
     }
@@ -67,7 +69,7 @@ public class CloakController {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("set_cloak");
         modelAndView.addObject("variable", user.getCloakConst());
-        modelAndView.addObject("trafficList", trafficSourceService.findAllByUser(userService.findByNick("Finik")));
+        modelAndView.addObject("trafficList", trafficSourceService.findAllByUser(user));
 
         return modelAndView;
     }
@@ -82,7 +84,6 @@ public class CloakController {
         SetupCloak setupCloak = new Propeller(trafficSource, user);
         setupCloak.propellerAuth();
         setupCloak.parsingCampaigns();
-
 
     }
 

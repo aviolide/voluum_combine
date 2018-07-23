@@ -1,4 +1,4 @@
-package ru.desided.voluum_combine.logic.setCloak;
+package ru.desided.voluum_combine.logic.monitoring;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -10,6 +10,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import ru.desided.voluum_combine.entity.Campaign;
+import ru.desided.voluum_combine.logic.add_offer.impl.Propeller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -48,6 +49,7 @@ public class CampaignResult {
                     campaigns.getName(), campaigns.getPrice(), campaigns.getConversions(), campaigns.getSpent(),
                     revenue, profit, roi);
             log.info( printInLog);
+            System.out.println(printInLog);
 
             if ((price.compareTo(new BigDecimal("5")) == -1)
                     && (((price.multiply(new BigDecimal("3")).compareTo(spent) == -1)
@@ -87,12 +89,14 @@ public class CampaignResult {
                 printInLog = String.format("campaign get profit %s, price %s, conversions %s, spentAmount %s",
                         campaigns.getName(), campaigns.getPrice(), campaigns.getConversions(), campaigns.getSpent());
                 log.info( printInLog);
+                System.out.println(printInLog);
             } else if (conversions.multiply(price).compareTo(new BigDecimal(10)) == 1
                     && conversions.multiply(price).compareTo(spent) == -1){
 
                 printInLog = String.format("campaign not profit %s, price %s, conversions %s, spentAmount %s",
                         campaigns.getName(), campaigns.getPrice(), campaigns.getConversions(), campaigns.getSpent());
                 log.info( printInLog);
+                System.out.println(printInLog);
                 int idFormula = 4;
                 stopCompaign(httpClientPropeller, campaigns, idFormula);
                 activeCampaignsList.remove(i);
@@ -114,7 +118,7 @@ public class CampaignResult {
             makeRequest(httpClientPropeller, httpPut);
         }
 
-        String printInLog = String.format("stop compaign %s, price %s, conversions %s, spentAmount %s, formula %d",
+        String printInLog = String.format("<strong>stop</strong> campaign %s, price %s, conversions %s, spentAmount %s, formula %d",
                 campaign.getName(), campaign.getPrice(), campaign.getConversions(), campaign.getSpent(), idFormula);
         log.info( printInLog);
     }

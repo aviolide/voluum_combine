@@ -3,12 +3,9 @@ package ru.desided.voluum_combine.logic.setCloak;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -23,10 +20,9 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import ru.desided.voluum_combine.LogHandler.CustomAppender;
-import ru.desided.voluum_combine.controllers.OfferController;
 import ru.desided.voluum_combine.entity.*;
 import ru.desided.voluum_combine.logic.add_offer.impl.Voluum;
-import ru.desided.voluum_combine.service.CountryService;
+import ru.desided.voluum_combine.logic.monitoring.CampaignResult;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -34,9 +30,8 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
-public class Propeller implements SetupCloak{
+public class Propeller implements SetupCloak {
 
     private String DATE = null;
     private String TOKEN = null;
@@ -254,17 +249,19 @@ public class Propeller implements SetupCloak{
 
             log.info( "finish changing cloak");
 
-//            while (activeCampaignsList.size() > 0) {
-//
-//                CampaignResult priceCompare = new CampaignResult();
-//                activeCampaignsList = updateCompaign(activeCampaignsList);
-//                System.out.println(activeCampaignsList.size());
-//                activeCampaignsList = new VoluumCloak(false).ConversionsList(activeCampaignsList);
-//                log.info( "size before " + activeCampaignsList.size());
-//                priceCompare.compareSpent(activeCampaignsList, httpClient); //==activecoma
-//                log.info( "sleep 3 min, size " + activeCampaignsList.size());
-//                TimeUnit.MINUTES.sleep(3);
-//            }
+
+
+            while (activeCampaignsList.size() > 0) {
+
+                CampaignResult priceCompare = new CampaignResult();
+                activeCampaignsList = updateCompaign(activeCampaignsList);
+                System.out.println(activeCampaignsList.size());
+                activeCampaignsList = new VoluumCloak(false).ConversionsList(activeCampaignsList);
+                log.info( "size before " + activeCampaignsList.size());
+                priceCompare.compareSpent(activeCampaignsList, httpClient); //==activecoma
+                log.info( "sleep 3 min, size " + activeCampaignsList.size());
+                TimeUnit.MINUTES.sleep(3);
+            }
 
         }
 
@@ -320,7 +317,7 @@ public class Propeller implements SetupCloak{
 
     @Override
     public void setupVoluum(User user, String shortId) throws IOException {
-        Voluum voluum = new Voluum(user, shortId);
+        Voluum voluum = new Voluum(user);
         voluum.voluumAuth();
         voluum.VoluumStartCloak(shortId);
     }

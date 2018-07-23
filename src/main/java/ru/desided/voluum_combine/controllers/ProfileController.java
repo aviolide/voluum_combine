@@ -80,7 +80,7 @@ public class ProfileController {
         AffiliateNetwork affiliateNetwork = new ObjectMapper().readValue(string, AffiliateNetwork.class);
         affiliateNetwork.setUser(userService.findByNick(user.getNick()));
         affiliateNetworkService.add(affiliateNetwork);
-        List<AffiliateNetwork> affiliateNetworks = affiliateNetworkService.findAllByUser(userService.findByNick("Finik"));
+        List<AffiliateNetwork> affiliateNetworks = affiliateNetworkService.findAllByUser(user);
         return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(affiliateNetworks);
     }
 

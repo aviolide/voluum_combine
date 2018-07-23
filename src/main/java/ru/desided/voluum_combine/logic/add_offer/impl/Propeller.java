@@ -1,5 +1,6 @@
 package ru.desided.voluum_combine.logic.add_offer.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -8,6 +9,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
@@ -16,30 +18,48 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import ru.desided.voluum_combine.entity.Offer;
-import ru.desided.voluum_combine.entity.TrafficSource;
+import org.apache.log4j.Logger;
+import ru.desided.voluum_combine.LogHandler.CustomAppender;
+import ru.desided.voluum_combine.controllers.MonitoringController;
+import ru.desided.voluum_combine.controllers.OfferController;
+import ru.desided.voluum_combine.entity.*;
+import ru.desided.voluum_combine.logic.monitoring.CampaignResult;
+import ru.desided.voluum_combine.logic.monitoring.StartMonitoring;
+import ru.desided.voluum_combine.logic.setCloak.VoluumCloak;
+import ru.desided.voluum_combine.service.CountryService;
+import ru.desided.voluum_combine.service.impl.CountryServiceImpl;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
-public class Propeller {
+public class Propeller implements StartMonitoring {
 
     private static final String UA = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:55.0) Gecko/20100101 Firefox/55.0";
     private Offer offer;
     private TrafficSource trafficSource;
     private HttpClient httpClient;
+    static Logger log = Logger.getLogger(Propeller.class.getName());
+
+    private Boolean startBol;
+
+    public void setStartBol(Boolean startBol) {
+        this.startBol = startBol;
+    }
 
     public Propeller(Offer offer, TrafficSource trafficSource){
         this.offer = offer;
         this.trafficSource = trafficSource;
+        CustomAppender customAppender = new CustomAppender();
+        log.addAppender(customAppender);
     }
 
     public void propellerAuth() throws IOException {
@@ -86,6 +106,7 @@ public class Propeller {
 
     }
 
+
     public void propellerSmart() throws IOException {
         ZoneId zoneId = ZoneId.of("-05:00");
         ZonedDateTime time = ZonedDateTime.ofInstant(Instant.now(), zoneId);
@@ -126,6 +147,92 @@ public class Propeller {
         StringEntity entityBody = new StringEntity(body);
         httpPost.setEntity(entityBody);
         makeRequest(httpClient, httpPost);
+    }
+
+
+
+    @Override
+    public void monitoring(User user) throws IOException, InterruptedException {
+        List<Campaign> activeCampaignsList = getDataFromPropeller();
+        Voluum voluum = new Voluum(user);
+        voluum.voluumAuth();
+
+        int i = 0;
+         while (startBol && i < 100) {
+
+            CampaignResult priceCompare = new CampaignResult();
+            activeCampaignsList = updateCompaign(activeCampaignsList);
+            System.out.println(activeCampaignsList.size());
+            activeCampaignsList = voluum.conversionsList(activeCampaignsList);
+            log.info( "size before " + activeCampaignsList.size());
+            priceCompare.compareSpent(activeCampaignsList, httpClient); //==activecoma
+            log.info( "sleep 3 min, size " + activeCampaignsList.size());
+            TimeUnit.MINUTES.sleep(3);
+            i++;
+        }
+        log.info("stop monitoring - time out");
+    }
+
+    @Override
+    public void stopMonitoring() {
+        startBol = false;
+    }
+
+    private List<Campaign> getDataFromPropeller() throws IOException {
+
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("EST"));
+        String dateNow = simpleDateFormat.format(date);
+
+//        campaignList.clear();
+        HttpGet httpGet = new HttpGet("https://partners.propellerads.com/v1.0/advertiser/campaigns/?" +
+                "dateFrom=" + dateNow + "&dateTill=" + dateNow + "&isArchived=0&orderBy=id&orderDest=desc&page=1&perPage=200&refresh=0");
+        String request = makeRequest(httpClient, httpGet);
+
+        JsonNode object = new ObjectMapper().readTree(request).get("result").get("items");
+        List<Campaign> campaigns = new ObjectMapper().readValue(object.toString(), new TypeReference<List<Campaign>>(){});
+
+        for (Campaign campaign : campaigns) {
+
+            String idVoluumComp = campaign.getName();
+            System.out.println(idVoluumComp);
+            BigDecimal price = new BigDecimal(idVoluumComp.substring(idVoluumComp.indexOf("(") + 2, idVoluumComp.indexOf(")")));
+            idVoluumComp = idVoluumComp.substring(idVoluumComp.lastIndexOf(" ") + 1, idVoluumComp.length());
+            campaign.setPrice(price);
+            campaign.setVoluumShortId(idVoluumComp);
+
+        }
+        return campaigns;
+    }
+
+    private List<Campaign> updateCompaign(List<Campaign> updateList) throws IOException {
+
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("EST"));
+        String dateNow = simpleDateFormat.format(date);
+
+        HttpGet httpGet = new HttpGet("https://partners.propellerads.com/v1.0/advertiser/campaigns/?" +
+                "dateFrom=" + dateNow + "&dateTill=" + dateNow + "&isArchived=0&orderBy=id&orderDest=desc&page=1&perPage=100&refresh=0");
+        String request = makeRequest(httpClient, httpGet);
+        JsonNode object = new ObjectMapper().readTree(request).get("result").get("items");
+        List<Campaign> campaigns = Arrays.asList(new ObjectMapper().readValue(object.toString(), Campaign[].class));
+
+        for (Campaign campaign : campaigns) {
+
+            for (int i = 0; i < updateList.size(); i++) {
+
+                Campaign campaignUpdate = updateList.get(i);
+                if (campaignUpdate.getName().equals(campaign.getName())) {
+
+                    BigDecimal spent = campaign.getSpent();
+                    campaignUpdate.setSpent(spent);
+                    updateList.set(i, campaignUpdate);
+                }
+            }
+        }
+        return updateList;
     }
 
     private static String makeRequest(HttpClient httpClient, HttpRequestBase http) throws IOException {

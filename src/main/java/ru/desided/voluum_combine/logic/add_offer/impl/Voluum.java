@@ -38,6 +38,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -142,7 +143,7 @@ public class Voluum {
         }
     }
 
-    public Voluum(User user, String shortId) {
+    public Voluum(User user) {
         Date date = new Date();
         SimpleDateFormat simpleDate = new SimpleDateFormat("ddMMyy");
         simpleDate.setTimeZone(TimeZone.getTimeZone("EST"));
@@ -496,6 +497,43 @@ public class Voluum {
                 }
             }
         }
+    }
+
+    public List<Campaign> conversionsList(List<Campaign> updateList) throws IOException {
+
+        Date date = new Date();
+        SimpleDateFormat simpleDate = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00'Z'");
+        simpleDate.setTimeZone(TimeZone.getTimeZone("EST"));
+        System.out.println(simpleDate.format(date));
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, 2);
+        System.out.println(simpleDate.format(calendar.getTime()));
+        DATE = simpleDate.format(date) + "&to=" + simpleDate.format(calendar.getTime());
+
+        HttpGet httpGet = new HttpGet("https://panel-api.voluum.com/report?from=" + DATE + "&tz=America%2FNew_York&sort=visits&direction=desc&columns=campaignName&columns=campaignId&columns=campaignWorkspaceName&columns=campaignWorkspaceId&columns=visits&columns=clicks&columns=conversions&columns=revenue&columns=cost&columns=profit&columns=cpv&columns=ctr&columns=cr&columns=cv&columns=roi&columns=epv&columns=epc&columns=ap&groupBy=campaign&offset=0&limit=500&include=ACTIVE&conversionTimeMode=VISIT");
+        String responseBody = makeRequest(httpClient, httpGet);
+
+        CommonObjectList campaignsList = new ObjectMapper().readValue(responseBody, CommonObjectList.class);
+
+        for (CommonObject campaignVoluum : campaignsList.getRows()) {
+
+            String compainID = campaignVoluum.getCampaignIdVoluum();
+            for (int i = 0; i < updateList.size(); i++) {
+
+                Campaign campaigns = updateList.get(i);
+                if (compainID.contains(campaigns.getVoluumShortId())) {
+                    BigDecimal conversions = campaignVoluum.getConversions();
+                    campaigns.setVoluumId(compainID);
+                    campaigns.setConversions(conversions);
+                    updateList.set(i, campaigns);
+                }
+            }
+
+        }
+
+        return updateList;
     }
 
     private String checkFlows() throws IOException {
